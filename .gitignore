@@ -21,13 +21,7 @@ node_modules/
 # dotenv environment variables file
 .env
 
-# Uploaded images (user data)
-uploads/
 
-# Database files
-data/*.db
-data/*.db-shm
-data/*.db-wal
 
 # OS files
 Thumbs.db
