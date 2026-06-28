@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建築密碼 - 桃子腳地圖專案</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html, body { overflow-y: auto !important; height: auto !important; min-height: 100vh; background: #f5f7fa; }
+        .shape-navbar ~ * { position: relative; z-index: 1; }
+        
+        .building-hero {
+            margin-top: 110px;
+            padding: 30px 20px 10px;
+            text-align: center;
+        }
+        .building-hero h1 {
+            font-size: 36px;
+            font-weight: 900;
+            color: #b71c1c;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .building-hero h1 .badge-icon {
+            font-size: 32px;
+        }
+        .building-hero p {
+            font-size: 16px;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            line-height: 1.7;
+        }
+        .building-subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .building-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        .building-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06);
+            transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .building-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #b71c1c, #ff6b6b, #ff9f43);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .building-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.1);
+            border-color: rgba(183, 28, 28, 0.15);
+        }
+        .building-card:hover::before {
+            opacity: 1;
+        }
+
+        .building-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+        .building-badge {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #b71c1c, #c0392b);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: 900;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(183, 28, 28, 0.2);
+        }
+        .building-card-title {
+            flex: 1;
+        }
+        .building-card-title h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0 0 4px;
+        }
+        .building-card-title span {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .building-card-desc {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #475569;
+            margin-bottom: 14px;
+            padding-left: 0;
+        }
+
+        .building-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        .building-card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .building-tag {
+            padding: 4px 10px;
+            background: rgba(183, 28, 28, 0.06);
+            color: #b71c1c;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .building-tag-360 {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
+        }
+
+        .building-view-btn {
+            padding: 6px 14px;
+            border: none;
+            background: #b71c1c;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(183, 28, 28, 0.15);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .building-view-btn:hover {
+            background: #8b0000;
+            transform: translateY(-1px);
+        }
+
+        .building-card-images {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .building-card-images img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .building-loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        .building-loading .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(183, 28, 28, 0.15);
+            border-top-color: #b71c1c;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .building-empty {
+            text-align: center;
+            padding: 80px 20px;
+            color: #94a3b8;
+        }
+        .building-empty .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        /* 建築密碼圖片預覽彈窗 */
+        .building-image-preview {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .building-image-preview.active {
+            display: flex;
+        }
+        .building-image-preview img {
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            cursor: zoom-out;
+        }
+        .building-image-preview .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .building-image-preview .close-btn:hover {
+            background: rgba(183, 28, 28, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .building-hero h1 { font-size: 26px; }
+            .building-grid { grid-template-columns: 1fr; padding: 0 14px 40px; }
+            .building-card { padding: 18px; }
+            .building-badge { width: 44px; height: 44px; font-size: 20px; }
+            .building-card-title h2 { font-size: 17px; }
+            .building-card-images img { height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="loader-geometric"></div>
+            <div class="loader-text">TAO-ZI-JIAO</div>
+            <div class="loader-subtext">載入中...</div>
+        </div>
+    </div>
+
+    <nav class="shape-navbar">
+        <div class="logo-container">
+            <img src="./page_picture/logo.png" alt="Logo" class="site-logo">
+        </div>
+       
+        <ul class="nav-links" id="navLinksMenu">
+            <div class="nav-indicator" id="navIndicator"></div>
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="tour.html" class="active">建築密碼</a></li>
+            <li><a href="about.html">關於我們</a></li>
+            <li><a href="login.html">管理登入</a></li>
+        </ul>
+
+        <div class="right-controls">
+            <div class="lang-selector" id="langSelector">
+                <span class="lang-icon">🌐</span>
+                <span class="lang-text" id="langText">zh-TW</span>
+                <span class="lang-arrow">▼</span>
+            </div>
+            <button id="menuBurger" class="burger-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- 語言選單 -->
+    <div id="langMenu" class="lang-popup-menu">
+        <button class="lang-menu-item active" data-lang="zh-TW">🇹🇼 繁體中文</button>
+        <button class="lang-menu-item" data-lang="en">🇺🇸 English</button>
+        <button class="lang-menu-item" data-lang="ja">🇯🇵 日本語</button>
+        <button class="lang-menu-item" data-lang="ko">🇰🇷 한국어</button>
+    </div>
+
+    <div id="mobileSideMenu" class="mobile-side-menu">
+        <button id="closeMenu" class="close-menu-btn">✕</button>
+        <ul class="side-menu-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="tour.html">建築密碼</a></li>
+            <li><a href="about.html">關於我們</a></li>
+            <li><a href="login.html" style="color: #b71c1c;">⚙️ 管理登入</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <div class="building-hero">
+            <h1>
+                <span class="badge-icon">🏛️</span>
+                桃子腳 · 建築密碼
+            </h1>
+            <p>
+                每一棟建築都有屬於自己的故事與代號。<br>
+                點擊卡片即可了解建築資訊，或是回到地圖上探索校園。
+            </p>
+            <div class="building-subtitle">— 發現校園建築的祕密 —</div>
+        </div>
+
+    <div id="buildingGrid" class="building-grid"></div>
+    </main>
+
+    <!-- 圖片預覽彈窗 -->
+    <div id="buildingImagePreview" class="building-image-preview">
+        <button class="close-btn" onclick="closeBuildingImagePreview()">✕</button>
+        <img id="buildingPreviewImg" src="" alt="" onclick="closeBuildingImagePreview()">
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // =============================================================
+        // 建築密碼頁面：動態讀取所有 buildingCode == true 的標點
+        // =============================================================
+        (function() {
+            const API_BASE = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'http://localhost:3000'
+                : '';
+
+            const grid = document.getElementById('buildingGrid');
+
+            async function loadBuildings() {
+                try {
+                    // 從 markers.json 和 image_meta.json 同時載入資料
+                    const [markersRes, metaRes] = await Promise.all([
+                        fetch(`${API_BASE}/api/markers`),
+                        fetch(`${API_BASE}/api/get-image-meta`)
+                    ]);
+
+                    const markers = markersRes.ok ? await markersRes.json() : [];
+                    const metaStore = metaRes.ok ? await metaRes.json() : {};
+
+                    // 只取 buildingCode == true 的建築
+                    const buildings = markers.filter(m => m.buildingCode === true);
+
+                    if (buildings.length === 0) {
+                        grid.innerHTML = `
+                            <div class="building-empty">
+                                <span class="icon">🏗️</span>
+                                <p>目前還沒有建築密碼資料<br>請至管理後台新增建築標點並開啟「建築密碼」</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // 排序：有 label 的優先按照字母排序
+                    buildings.sort((a, b) => {
+                        const la = (a.label || 'ZZ').toUpperCase();
+                        const lb = (b.label || 'ZZ').toUpperCase();
+                        return la.localeCompare(lb);
+                    });
+
+                    grid.innerHTML = buildings.map(b => {
+                        const label = b.label || b.title.charAt(0) || '🏛';
+                        const hasImages = b.images && b.images.length > 0;
+                        const hasPano = b.panoUrl;
+                        const imageUrl = hasImages ? resolvePanoUrl(b.images[0]) : '';
+                        const floorInfo = b.floor ? `<span class="building-tag">${b.floor}</span>` : '';
+
+                        return `
+                            <div class="building-card" onclick="openBuildingOnMap('${b.id}')">
+                                <div class="building-card-header">
+                                    <div class="building-badge">${label}</div>
+                                    <div class="building-card-title">
+                                        <h2>${b.title || '未命名建築'}</h2>
+                                        <span>建築代號：${label}</span>
+                                    </div>
+                                </div>
+                                ${imageUrl ? `
+                                <div class="building-card-images" onclick="event.stopPropagation(); openBuildingImagePreview('${imageUrl}')">
+                                    <img src="${imageUrl}" alt="${b.title}" loading="lazy">
+                                </div>` : ''}
+                                ${b.desc ? `<div class="building-card-desc">${b.desc}</div>` : ''}
+                                <div class="building-card-footer">
+                                    <div class="building-card-tags">
+                                        ${floorInfo}
+                                        ${hasPano ? '<span class="building-tag building-tag-360">📷 360 全景</span>' : ''}
+                                        <span class="building-tag">🏛 建築</span>
+                                    </div>
+                    <a href="index.html" class="building-view-btn" onclick="event.stopPropagation();">
+                        在地圖查看 →
+                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                } catch (err) {
+                    console.error('載入建築密碼失敗:', err);
+                    grid.innerHTML = `
+                        <div class="building-empty">
+                            <span class="icon">⚠️</span>
+                            <p>載入建築資料失敗，請確認後端伺服器已啟動。</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // 解析圖片 URL
+            function resolvePanoUrl(url) {
+                if (!url) return '';
+                if (/^https?:\/\//i.test(url) || url.startsWith('/') || url.startsWith('.') || url.includes('\\')) return url;
+                if (url.includes('/')) return url;
+                return `${API_BASE}/uploads/${url}`;
+            }
+
+            // 點擊建築卡片的「在地圖查看」- 實際由 a 連結處理
+            window.openBuildingOnMap = function(id) {
+                // 由 <a> 連結處理
+            };
+
+            // 圖片預覽
+            window.openBuildingImagePreview = function(url) {
+                const overlay = document.getElementById('buildingImagePreview');
+                const img = document.getElementById('buildingPreviewImg');
+                if (overlay && img) {
+                    img.src = url;
+                    overlay.classList.add('active');
+                }
+            };
+            window.closeBuildingImagePreview = function() {
+                const overlay = document.getElementById('buildingImagePreview');
+                if (overlay) overlay.classList.remove('active');
+            };
+
+            // 載入後自動執行
+            function initTourPage() {
+                const grid = document.getElementById('buildingGrid');
+                if (!grid) return;
+                
+                // 顯示載入動畫
+                grid.innerHTML = `
+                    <div class="building-loading">
+                        <div class="spinner"></div>
+                        <div>正在解鎖建築密碼...</div>
+                    </div>
+                `;
+                
+                // 延遲載入建築資料
+                setTimeout(loadBuildings, 400);
+            }
+            
+            document.addEventListener('DOMContentLoaded', initTourPage);
+            
+            // 也支援 window load（確保 script.js 已載入）
+            if (document.readyState === 'complete') {
+                initTourPage();
+            } else {
+                window.addEventListener('load', initTourPage);
+            }
+        })();
+    </script>
+</body>
+</html>

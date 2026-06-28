@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首頁 (地圖導覽) - 桃子腳地圖專案</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loader-bg-shapes">
+            <div class="loader-shape shape-1"></div>
+            <div class="loader-shape shape-2"></div>
+            <div class="loader-shape shape-3"></div>
+            <div class="loader-shape shape-4"></div>
+        </div>
+        <div class="loader-container">
+            <div class="loader-logo-wrapper">
+                <img src="./page_picture/only_logo.png" alt="Logo" class="loader-logo">
+            </div>
+            <div class="loader-text">載入中</div>
+            <div class="loader-progress-bar">
+                <div class="loader-progress-fill" id="loaderProgressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 右側沉浸式教學導覽面板（不擋地圖操作） ===== -->
+    <div id="tourPanel" class="tour-panel" style="display:none;">
+        <div class="tour-panel-header">
+            <div class="tour-panel-title-row">
+                <span class="tour-panel-icon">🏫</span>
+                <span class="tour-panel-title">桃子腳導覽</span>
+            </div>
+            <button id="tourCloseBtn" class="tour-close-btn" title="關閉導覽">✕</button>
+        </div>
+
+        <!-- 進度條 -->
+        <div class="tour-progress-bar">
+            <div class="tour-progress-fill" id="tourProgressFill"></div>
+        </div>
+
+        <!-- 內容區 -->
+        <div class="tour-content" id="tourContent">
+            <div class="tour-step-icon" id="tourStepIcon">🏫</div>
+            <h3 class="tour-step-title" id="tourStepTitle">歡迎</h3>
+            <p class="tour-step-desc" id="tourStepDesc">說明文字</p>
+        </div>
+
+        <!-- 底部控制 -->
+        <div class="tour-footer">
+            <div class="tour-dots" id="tourDots"></div>
+            <div class="tour-step-label" id="tourStepLabel">1/7</div>
+            <div class="tour-buttons">
+                <button id="tourSkipBtn" class="tour-btn tour-btn-skip">略過導覽</button>
+                <button id="tourNextBtn" class="tour-btn tour-btn-next">下一步 →</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="shape-navbar">
+        <div class="logo-container">
+            <img src="./page_picture/logo.png" alt="Logo" class="site-logo">
+        </div>
+       
+         <ul class="nav-links" id="navLinksMenu">
+            <div class="nav-indicator" id="navIndicator"></div> 
+            <li><a href="index.html" class="active">首頁</a></li>
+            <li><a href="tour.html">建築密碼</a></li>
+            <li><a href="about.html">關於我們</a></li>
+            <li><a href="login.html">管理登入</a></li>
+        </ul>
+
+        <div class="right-controls">
+            <div class="lang-selector" id="langSelector">
+                <span class="lang-icon">🌐</span>
+                <span class="lang-text" id="langText">zh-TW</span>
+                <span class="lang-arrow">▼</span>
+            </div>
+            <button id="menuBurger" class="burger-btn">☰</button>
+        </div>
+    </nav>
+
+    <div id="mobileSideMenu" class="mobile-side-menu">
+        <button id="closeMenu" class="close-menu-btn">✕</button>
+        <ul class="side-menu-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="tour.html">建築密碼</a></li>
+            <li><a href="about.html">關於我們</a></li>
+            <li><a href="login.html" style="color: #b71c1c;">⚙️ 管理登入</a></li>
+        </ul>
+    </div>
+
+    <div class="map-container" id="container">
+        <div id="map-wrapper">
+            <img id="map" src="./page_picture/TYK_map_top.jpg" alt="學校地圖">
+            <div id="marker-container"></div>
+        </div>
+    </div>
+
+    <div class="layer-control-panel">
+        <div class="layer-popup-menu" id="layerPopupMenu">
+            <div class="layer-popup-header">360點位樓層</div>
+            <div class="layer-floor-btns" id="layerFloorBtns">
+                <button class="layer-floor-btn active" data-floor="1F">1F</button>
+                <button class="layer-floor-btn" data-floor="2F">2F</button>
+                <button class="layer-floor-btn" data-floor="3F">3F</button>
+            </div>
+            <div class="layer-popup-divider"></div>
+            <div class="layer-popup-header">地圖圖層</div>
+            <button class="layer-menu-item active" data-layer="top">教室</button>
+            <button class="layer-menu-item" data-layer="base">棟別</button>
+        </div>
+        <button id="layerMenuBtn" class="layer-main-btn">
+            圖層設定 <span style="font-size:10px;">▲</span>
+        </button>
+    </div>
+
+    <!-- 語言選單 -->
+    <div id="langMenu" class="lang-popup-menu">
+        <button class="lang-menu-item active" data-lang="zh-TW">🇹🇼 繁體中文</button>
+        <button class="lang-menu-item" data-lang="en">🇺🇸 English</button>
+        <button class="lang-menu-item" data-lang="ja">🇯🇵 日本語</button>
+        <button class="lang-menu-item" data-lang="ko">🇰🇷 한국어</button>
+    </div>
+
+    <div class="zoom-control-panel">
+        <span class="zoom-btn" id="zoomOutBtn">−</span>
+        <input type="range" id="zoomSlider" min="0.3" max="4.0" step="0.01" value="1.3">
+        <span class="zoom-btn" id="zoomInBtn">+</span>
+            <button type="button" class="zoom-btn" id="btnTogglePanoramaMode" title="切換 360 模式" onclick="togglePanoramaMapMode()">360模式</button>
+        </div>
+
+    <div id="panorama-overlay" class="panorama-overlay" style="display: none;">
+        <button class="panorama-close-btn" onclick="closePanoramaMode()" aria-label="關閉全景模式">×</button>
+        <div id="panorama-viewer"></div>
+        <div id="panorama-mini-map" class="panorama-mini-map">
+            <div class="panorama-mini-map-header">
+                <span class="panorama-mini-map-title">360導覽</span>
+                <span class="panorama-mini-map-current" id="panoramaCurrentLocation">地點：校門</span>
+                <div class="panorama-mini-map-controls">
+                    <button type="button" class="panorama-mini-map-zoom-btn" id="miniMapZoomIn" title="放大">＋</button>
+                    <button type="button" class="panorama-mini-map-zoom-btn" id="miniMapZoomOut" title="縮小">−</button>
+                    <button type="button" class="panorama-mini-map-reset-btn" id="miniMapReset" title="重置大小">⤢</button>
+                </div>
+            </div>
+            <div class="panorama-floor-nav" id="panoramaFloorNav">
+                <button class="pano-floor-btn active" data-floor="1F">1F</button>
+                <button class="pano-floor-btn" data-floor="2F">2F</button>
+                <button class="pano-floor-btn" data-floor="3F">3F</button>
+            </div>
+            <div id="panorama-mini-map-canvas" class="panorama-mini-map-canvas"></div>
+            <div class="panorama-mini-map-resize-handle" id="miniMapResizeHandle"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // ================================================================
+        // 右側教學導覽面板 — 不擋地圖，可同時操作
+        // ================================================================
+        (function() {
+            const TOUR_KEY = 'tyk_tour_done';
+            if (localStorage.getItem(TOUR_KEY)) return;
+
+            const panel = document.getElementById('tourPanel');
+            const content = document.getElementById('tourContent');
+            const iconEl = document.getElementById('tourStepIcon');
+            const titleEl = document.getElementById('tourStepTitle');
+            const descEl = document.getElementById('tourStepDesc');
+            const dotsEl = document.getElementById('tourDots');
+            const labelEl = document.getElementById('tourStepLabel');
+            const progressFill = document.getElementById('tourProgressFill');
+            const nextBtn = document.getElementById('tourNextBtn');
+            const skipBtn = document.getElementById('tourSkipBtn');
+            const closeBtn = document.getElementById('tourCloseBtn');
+
+            const steps = [
+                { icon: '🏫', title: '歡迎來到桃子腳校園', desc: '歡迎探索新北市立桃子腳國民中小學的互動式校園地圖系統！右側面板將帶您認識各項操作。' },
+                { icon: '✋', title: '拖曳移動地圖', desc: '現在試試看——<strong>按住地圖任意處並拖曳</strong>，即可自由移動視角，探索校園各角落。' },
+                { icon: '🔍', title: '縮放檢視細節', desc: '使用右下角的 <strong>「+」「−」</strong> 按鈕、拖動滑桿，或在 PC 上滾動滑鼠滾輪來放大縮小。' },
+                { icon: '🗺️', title: '切換圖層', desc: '點擊左下角 <strong>「圖層設定」</strong>，可在教室與棟別平面圖之間切換。' },
+                { icon: '📍', title: '探索校園地標', desc: '地圖上的彩色標記代表校園重要區域。<strong>點擊標記</strong>可查看詳細資訊與照片。' },
+                { icon: '🔄', title: '360° 全景實境', desc: '點擊右下角 <strong>「360模式」</strong>，地圖上會顯示環景拍攝點，點擊即可進入沉浸式全景體驗！' },
+                { icon: '🚀', title: '準備出發！', desc: '以上是基本操作介紹。您隨時可以打開右下的 <strong>「💡 重開導覽」</strong> 重新觀看。' }
+            ];
+
+            let current = 0;
+
+            function render(index) {
+                const s = steps[index];
+                const total = steps.length;
+                const isLast = index === total - 1;
+
+                content.style.opacity = '0';
+                content.style.transform = 'translateY(8px)';
+                setTimeout(() => {
+                    iconEl.textContent = s.icon;
+                    titleEl.textContent = s.title;
+                    descEl.innerHTML = s.desc;
+
+                    dotsEl.innerHTML = steps.map((_, i) =>
+                        `<span class="tour-dot ${i === index ? 'active' : ''}" data-idx="${i}"></span>`
+                    ).join('');
+                    document.querySelectorAll('.tour-dot').forEach(d => {
+                        d.addEventListener('click', () => {
+                            const idx = parseInt(d.dataset.idx);
+                            if (idx !== current) goTo(idx);
+                        });
+                    });
+
+                    labelEl.textContent = `${index + 1}/${total}`;
+                    progressFill.style.width = `${((index + 1) / total) * 100}%`;
+                    nextBtn.textContent = isLast ? '🎉 完成！' : '下一步 →';
+
+                    content.style.opacity = '1';
+                    content.style.transform = 'translateY(0)';
+                }, 200);
+
+                current = index;
+            }
+
+            function goTo(index) {
+                if (index < 0 || index >= steps.length) return;
+                render(index);
+            }
+
+            function dismiss() {
+                panel.style.transform = 'translateX(120%)';
+                panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+                setTimeout(() => {
+                    panel.style.display = 'none';
+                }, 400);
+                localStorage.setItem(TOUR_KEY, 'true');
+                const reviveBtn = document.createElement('button');
+                reviveBtn.id = 'tourReviveBtn';
+                reviveBtn.innerHTML = '💡 重開導覽';
+                reviveBtn.className = 'tour-revive-btn';
+                document.body.appendChild(reviveBtn);
+                reviveBtn.addEventListener('click', () => {
+                    reviveBtn.remove();
+                    panel.style.display = 'flex';
+                    panel.style.transform = 'translateX(120%)';
+                    requestAnimationFrame(() => {
+                        panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+                        panel.style.transform = 'translateX(0)';
+                    });
+                    goTo(0);
+                });
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (current === steps.length - 1) {
+                    dismiss();
+                } else {
+                    goTo(current + 1);
+                }
+            });
+
+            skipBtn.addEventListener('click', dismiss);
+            closeBtn.addEventListener('click', dismiss);
+
+            setTimeout(() => {
+                panel.style.display = 'flex';
+                panel.style.transform = 'translateX(120%)';
+                requestAnimationFrame(() => {
+                    panel.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+                    panel.style.transform = 'translateX(0)';
+                });
+                goTo(0);
+            }, 1800);
+        })();
+    </script>
+</body>
+</html>

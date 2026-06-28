@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桃子腳校園地圖 - 管理員主控台</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="loader-geometric"></div>
+            <div class="loader-text">TAO-ZI-JIAO</div>
+            <div class="loader-subtext">管理系統載入中...</div>
+        </div>
+    </div>
+
+    <nav class="shape-navbar">
+        <div class="logo-container">
+            <img src="./page_picture/logo.png" alt="Logo" class="site-logo">
+        </div>
+       
+        <ul class="nav-links" id="navLinksMenu">
+            <div class="nav-indicator" id="navIndicator"></div>
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="tour.html">建築密碼</a></li>
+            <li><a href="about.html">關於我們</a></li>
+            <li><a href="login.html" class="active">管理登入</a></li>
+        </ul>
+
+        <div class="right-controls">
+            <div class="lang-selector">
+                <span class="lang-icon">🌐</span>
+                <span class="lang-text">zh-TW</span>
+                <span class="lang-arrow">▼</span>
+            </div>
+            <button id="menuBurger" class="burger-btn" style="display:none;">☰</button>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        
+        <div class="map-section">
+            <div id="map-wrapper" class="map-wrapper">
+                <img id="map" src="page_picture/TYK_map_top.jpg" alt="校園平面圖" class="main-map">
+                <div id="marker-container" class="marker-container"></div>
+            </div>
+
+            <!-- 熱點管理：左側內嵌 360 全景（非滿版） -->
+            <div id="hotspotPanoPanel" class="hotspot-pano-panel" style="display:none;">
+                <div class="hotspot-pano-header">
+                    <span class="hotspot-pano-title" id="hotspotPanoTitle">360 全景</span>
+                    <span class="hotspot-pano-hint">拖曳旋轉視角 · 點擊畫面標記熱點</span>
+                </div>
+                <div id="hotspot-pano-viewer" class="hotspot-pano-viewer"></div>
+            </div>
+            
+            <button id="btnToggleLayer" class="layer-toggle-btn">切换圖層 🔺</button>
+            <div id="aim-hint" class="aim-hint-text" style="display: none;">🎯 精確瞄準模式已啟動，請直接在地圖上想要標點的位置點擊滑鼠左鍵！</div>
+        </div>
+
+        <!-- 中間設定面板 -->
+        <aside id="admin-panel" class="admin-sidebar">
+            <input type="hidden" id="markerId">
+            <input type="hidden" id="markerBorderColor" value="#ffffff">
+            <input type="hidden" id="markerBgColor" value="rgba(255,255,255,0.15)">
+
+            <div class="admin-user-panel">
+                <div class="admin-user-avatar">👤</div>
+                <div class="admin-user-info">
+                    <div class="admin-user-name" id="currentUsername">tyk114</div>
+                    <div class="admin-user-role" id="currentUserRole">系統管理員</div>
+                </div>
+            </div>
+
+            <!-- ===== 點位管理（新增/修改合併） ===== -->
+            <div id="pointModeContent" class="mode-content-panel">
+                <div class="mode-content-header">
+                    <span class="mode-content-icon">📍</span>
+                    <span class="mode-content-title">點位設定</span>
+                    <button class="mode-info-btn" id="btnPointInfo" title="說明" onclick="showPointInfo()">ⓘ</button>
+                </div>
+
+                <!-- 點位選取 -->
+                <div class="admin-section">
+                    <select id="selectMarkerToEdit" class="admin-select" aria-label="選擇點位">
+                        <option value="">-- 新增點位（請填寫下方資訊）--</option>
+                    </select>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">💡 選擇現有點位可編輯，或留空來新增一個點位</div>
+                </div>
+
+                <div class="input-item">
+                    <label for="markerTitle">標點區塊名稱</label>
+                    <input type="text" id="markerTitle" placeholder="例如：C 棟大樓 - 行政中心">
+                </div>
+
+                <!-- ===== 點位樣式管理（形狀/大小/顏色） ===== -->
+                <div class="input-item">
+                    <label>🎨 點位樣式</label>
+                    <div class="shape-select-group" id="shapeSelectGroup">
+                        <button class="shape-select-btn active" data-shape="square">方形</button>
+                        <button class="shape-select-btn" data-shape="circle">圓形</button>
+                        <button class="shape-select-btn" data-shape="pill">藥丸型</button>
+                    </div>
+                </div>
+
+                <div class="input-item">
+                    <label for="markerSize">📏 點位大小 (px)</label>
+                    <div class="zoom-adjust-wrapper">
+                        <button type="button" class="zoom-adjust-btn" onclick="adjustMarkerSize(-10)">−</button>
+                        <input type="number" id="markerSize" min="40" max="200" step="10" value="120">
+                        <button type="button" class="zoom-adjust-btn" onclick="adjustMarkerSize(10)">+</button>
+                    </div>
+                </div>
+
+                <div class="input-item">
+                    <label for="markerFontSize">🔤 文字大小 (px)</label>
+                    <div class="zoom-adjust-wrapper">
+                        <button type="button" class="zoom-adjust-btn" onclick="adjustFontSize(-5)">−</button>
+                        <input type="number" id="markerFontSize" min="20" max="120" step="5" value="90">
+                        <button type="button" class="zoom-adjust-btn" onclick="adjustFontSize(5)">+</button>
+                    </div>
+                </div>
+
+                <div class="input-item">
+                    <label>🎨 邊框顏色</label>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="color-btn active" data-color="#ffffff" style="background:#ffffff; border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBorderColor(this)"></button>
+                        <button class="color-btn" data-color="#b71c1c" style="background:#b71c1c; border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBorderColor(this)"></button>
+                        <button class="color-btn" data-color="#ff9f43" style="background:#ff9f43; border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBorderColor(this)"></button>
+                        <button class="color-btn" data-color="#3b82f6" style="background:#3b82f6; border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBorderColor(this)"></button>
+                        <button class="color-btn" data-color="#10ac84" style="background:#10ac84; border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBorderColor(this)"></button>
+                        <button class="color-btn" data-color="#ee5a24" style="background:#ee5a24; border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBorderColor(this)"></button>
+                    </div>
+                </div>
+
+                <div class="input-item">
+                    <label>🎨 背景顏色</label>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="bg-color-btn active" data-bg="rgba(255,255,255,0.15)" style="background:rgba(255,255,255,0.3); border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBgColor(this, 'rgba(255,255,255,0.15)')"></button>
+                        <button class="bg-color-btn" data-bg="rgba(183,28,28,0.25)" style="background:rgba(183,28,28,0.25); border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBgColor(this, 'rgba(183,28,28,0.25)')"></button>
+                        <button class="bg-color-btn" data-bg="rgba(255,159,67,0.25)" style="background:rgba(255,159,67,0.25); border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBgColor(this, 'rgba(255,159,67,0.25)')"></button>
+                        <button class="bg-color-btn" data-bg="rgba(59,130,246,0.25)" style="background:rgba(59,130,246,0.25); border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBgColor(this, 'rgba(59,130,246,0.25)')"></button>
+                        <button class="bg-color-btn" data-bg="rgba(16,172,132,0.25)" style="background:rgba(16,172,132,0.25); border:2px solid #ccc; width:32px; height:32px; border-radius:6px; cursor:pointer;" onclick="selectBgColor(this, 'rgba(16,172,132,0.25)')"></button>
+                    </div>
+                </div>
+
+                <div class="input-item">
+                    <label for="markerDesc">標點空間介紹</label>
+                    <textarea id="markerDesc" rows="2" placeholder="例如：校長室、學務處與教導處"></textarea>
+                </div>
+
+                <div class="input-item">
+                    <label for="markerLabel">圈圈內顯文字/編號</label>
+                    <input type="text" id="markerLabel" placeholder="例如：C">
+                </div>
+
+                <div class="input-item">
+                    <label for="markerFloor">所在樓層 (Floor)</label>
+                    <select id="markerFloor" class="admin-select">
+                        <option value="1F">1F</option>
+                        <option value="2F">2F</option>
+                        <option value="3F">3F</option>
+                    </select>
+                </div>
+
+                <div class="input-item">
+                    <label for="markerZoomScale">🔍 點擊此地標後的放大比例</label>
+                    <div class="zoom-adjust-wrapper">
+                        <button type="button" class="zoom-adjust-btn" onclick="adjustZoom(-0.1)">−</button>
+                        <input type="number" id="markerZoomScale" min="0.5" max="4.0" step="0.1" value="1.5">
+                        <button type="button" class="zoom-adjust-btn" onclick="adjustZoom(0.1)">+</button>
+                    </div>
+                </div>
+
+                <div class="input-item">
+                    <label>關聯圖片</label>
+                    <div id="markerImagePreview" class="marker-image-preview-list"></div>
+                    <select id="markerImageSelect" class="admin-select" multiple size="3"></select>
+                    <div id="pano360Hint" style="display:none; margin-top:8px; padding:10px; background:rgba(59,130,246,0.08); border-left:3px solid #3b82f6; border-radius:6px; font-size:12px; color:#1e40af; line-height:1.5;">
+                        💡 切換至「360 全景」模式後，可上傳全景圖片並編輯熱點標註
+                    </div>
+                </div>
+
+                <div class="input-item" style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+                    <label for="markerBuildingCode" style="font-size:13px; font-weight:700; color:#2f3542; cursor:pointer; margin:0; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="markerBuildingCode" checked style="width:18px; height:18px; accent-color:#b71c1c; cursor:pointer;">
+                        🏛️ 列為建築密碼（顯示於建築密碼頁面）
+                    </label>
+                </div>
+
+                <div class="coordinate-row">
+                    <div class="coord-field">
+                        <label>點位座標 X</label>
+                        <div class="coord-adjust-wrapper">
+                            <button type="button" class="coord-adjust-btn" onclick="adjustCoord('markerX', -5)">−</button>
+                            <input type="text" id="markerX" placeholder="點擊地圖或輸入" readonly>
+                            <button type="button" class="coord-adjust-btn" onclick="adjustCoord('markerX', 5)">+</button>
+                        </div>
+                    </div>
+                    <div class="coord-field">
+                        <label>點位座標 Y</label>
+                        <div class="coord-adjust-wrapper">
+                            <button type="button" class="coord-adjust-btn" onclick="adjustCoord('markerY', -5)">−</button>
+                            <input type="text" id="markerY" placeholder="點擊地圖或輸入" readonly>
+                            <button type="button" class="coord-adjust-btn" onclick="adjustCoord('markerY', 5)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="aim-controls">
+                    <button type="button" id="btnActivateAim" class="aim-btn aim-btn-primary">
+                        <span class="aim-icon">🎯</span>
+                        <span class="aim-text">點擊地圖設定位置</span>
+                    </button>
+                    <div class="aim-status" id="aimStatus" style="display:none;">
+                        <span class="aim-status-dot"></span>
+                        <span class="aim-status-text">正在等待點擊地圖...</span>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button type="button" id="btnSaveMarker" class="save-submit-btn" style="flex:1;">💾 儲存至資料庫</button>
+                    <button type="button" id="btnDeleteMarker" class="delete-btn" style="flex:1; display:none;">🗑 刪除此點位</button>
+                </div>
+            </div>
+
+            <!-- ===== 熱點管理（獨立面板） ===== -->
+            <div id="hotspotModeContent" class="mode-content-panel" style="display:none;">
+                <div class="mode-content-header">
+                    <span class="mode-content-icon">🎯</span>
+                    <span class="mode-content-title">熱點管理</span>
+                    <button class="mode-info-btn" title="說明" onclick="showHotspotInfo()">ⓘ</button>
+                </div>
+
+                <!-- 第一步：選擇 360 圖片 -->
+                <div class="admin-section">
+                    <label style="font-weight:700; font-size:13px; color:#1e272e; margin-bottom:8px; display:block;">📁 第一步：選擇 360 全景圖片</label>
+                    <select id="hotspot360ImageSelect" class="admin-select" aria-label="選擇360圖片">
+                        <option value="">-- 請選擇 360 全景圖片 --</option>
+                    </select>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">💡 選擇要編輯熱點的 360 全景圖片</div>
+                </div>
+
+                <!-- 第二步：熱點列表（類似點位管理） -->
+                <div id="hotspotManagePanel" class="hotspot-manage-panel" style="display:none;">
+                    <div class="hotspot-panel-header">
+                        <span class="hotspot-panel-title">📍 熱點列表</span>
+                        <span class="hotspot-panel-count" id="hotspotCount">0 個熱點</span>
+                    </div>
+                    
+                    <div id="hotspotsList" class="hotspots-list">
+                        <div class="no-hotspots">尚無熱點，點擊下方按鈕新增</div>
+                    </div>
+                    
+                    <div class="hotspot-panel-actions">
+                        <button type="button" id="btnAddHotspot" class="hotspot-action-btn btn-add">＋ 新增熱點</button>
+                    </div>
+                </div>
+
+                <!-- 第三步：熱點詳細設定（類似點位表單） -->
+                <div id="hotspotSettingsPanel" class="mode-content-panel" style="display:none;">
+                    <div class="mode-content-header">
+                        <span class="mode-content-icon">⚙️</span>
+                        <span class="mode-content-title">熱點詳細設定</span>
+                    </div>
+
+                    <div class="input-item">
+                        <label for="hotspotId">熱點 ID</label>
+                        <input type="text" id="hotspotId" readonly style="background:#f1f5f9;">
+                    </div>
+
+                    <div class="input-item">
+                        <label for="hotspotType">類型</label>
+                        <select id="hotspotType" class="admin-select">
+                            <option value="info">📄 資訊型（顯示文字/圖片）</option>
+                            <option value="scene">🌀 導覽型（切換場景）</option>
+                        </select>
+                    </div>
+
+                    <div class="coordinate-row">
+                        <div class="coord-field">
+                            <label>Pitch (垂直角度 -90~90)</label>
+                            <input type="number" id="hotspotPitch" value="0" min="-90" max="90" step="0.1">
+                        </div>
+                        <div class="coord-field">
+                            <label>Yaw (水平角度 0~360)</label>
+                            <input type="number" id="hotspotYaw" value="0" min="0" max="360" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="input-item">
+                        <label for="hotspotText">顯示文字</label>
+                        <input type="text" id="hotspotText" placeholder="熱點顯示的文字">
+                    </div>
+
+                    <div class="input-item">
+                        <label for="hotspotTitle">標題</label>
+                        <input type="text" id="hotspotTitle" placeholder="熱點標題（點擊後彈出視窗顯示）">
+                    </div>
+
+                    <div class="input-item">
+                        <label for="hotspotContent">內文</label>
+                        <textarea id="hotspotContent" rows="3" placeholder="熱點詳細說明內容"></textarea>
+                    </div>
+
+                <div class="input-item">
+                    <label>關聯圖片（資訊型可選）</label>
+                    <div id="hotspotImagePreview" class="marker-image-preview-list"></div>
+                    <select id="hotspotImageSelect" class="admin-select" multiple size="3">
+                        <option value="">-- 請選擇一般圖片 --</option>
+                    </select>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">💡 只顯示一般圖片（非 360 全景）</div>
+                </div>
+
+                    <div class="input-item">
+                        <label for="hotspotScene">目標場景（導覽型）</label>
+                        <select id="hotspotScene" class="admin-select">
+                            <option value="">-- 選擇目標場景 --</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <button type="button" id="btnPreviewHotspot" class="hotspot-action-btn btn-preview" style="flex:1;">👁 預覽位置</button>
+                        <button type="button" id="btnSaveHotspot" class="save-submit-btn" style="flex:1;">💾 儲存熱點</button>
+                        <button type="button" id="btnDeleteHotspot" class="delete-btn" style="flex:1;">🗑 刪除熱點</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 圖片管理 ===== -->
+            <div id="imageModeContent" class="mode-content-panel" style="display:none;">
+                <div class="mode-content-header">
+                    <span class="mode-content-icon">🖼</span>
+                    <span class="mode-content-title">圖片管理</span>
+                    <button class="mode-info-btn" title="說明" onclick="showImageInfo()">ⓘ</button>
+                </div>
+
+                <div class="img-drop-zone" id="imgDropZone">
+                    <div class="img-drop-icon">📁</div>
+                    <div class="img-drop-text">拖曳圖片到此處上傳，或點擊選擇檔案</div>
+                    <div class="img-drop-hint">支援 JPG / PNG / WebP，單檔最大 20MB</div>
+                    <input type="file" id="imageFileInput" accept="image/*" multiple style="display:none;">
+                </div>
+                <div id="uploadStatusMessage" class="upload-status-hint"></div>
+
+                <div class="img-toolbar">
+                    <div class="img-search-box">
+                        <input type="text" id="imgSearchInput" placeholder="🔍 搜尋圖片名稱..." class="img-search-input">
+                        <select id="imgFilterType" class="img-filter-select">
+                            <option value="all">全部類型</option>
+                            <option value="360">360 全景</option>
+                            <option value="normal">一般照片</option>
+                        </select>
+                    </div>
+                    <div class="img-toolbar-stats">
+                        <span id="imgStatsTotal">0 張</span>
+                        <span id="imgStats360">0 張 360</span>
+                    </div>
+                </div>
+
+                <div id="imgBatchBar" class="img-batch-bar" style="display:none;">
+                    <span id="imgBatchCount">已選 0 張</span>
+                    <button onclick="imgBatchSetType('360')" class="img-batch-btn batch-btn-360">設為 360</button>
+                    <button onclick="imgBatchSetType('normal')" class="img-batch-btn batch-btn-normal">設為一般</button>
+                    <button onclick="imgBatchDelete()" class="img-batch-btn batch-btn-delete">🗑️ 批次刪除</button>
+                    <button onclick="imgBatchCancel()" class="img-batch-btn batch-btn-cancel">取消選擇</button>
+                </div>
+
+                <div id="uploadedImageGallery" class="img-gallery-grid"></div>
+            </div>
+
+            <!-- ===== 設定 ===== -->
+            <div id="settingsModeContent" class="mode-content-panel" style="display:none;">
+                <div class="mode-content-header">
+                    <span class="mode-content-icon">⚙</span>
+                    <span class="mode-content-title">設定</span>
+                    <button class="mode-info-btn" title="說明" onclick="showSettingsInfo()">ⓘ</button>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">更改密碼</div>
+                    <div class="input-item">
+                        <label for="newPassword">新密碼</label>
+                        <input type="password" id="newPassword" class="admin-input" placeholder="請輸入新密碼">
+                    </div>
+                    <div class="input-item">
+                        <label for="confirmPassword">再次輸入</label>
+                        <input type="password" id="confirmPassword" class="admin-input" placeholder="再次輸入新密碼">
+                    </div>
+                    <button type="button" id="btnSavePassword" class="save-submit-btn">💾 儲存密碼</button>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">新增帳號</div>
+                    <div class="input-item">
+                        <label for="newAccountName">帳號</label>
+                        <input type="text" id="newAccountName" class="admin-input" placeholder="請輸入新帳號">
+                    </div>
+                    <div class="input-item">
+                        <label for="newAccountPass">密碼</label>
+                        <input type="password" id="newAccountPass" class="admin-input" placeholder="請輸入密碼">
+                    </div>
+                    <div class="input-item">
+                        <label for="newAccountRole">權限層級</label>
+                        <select id="newAccountRole" class="admin-select">
+                            <option value="owner">最大系統管理員帳戶 - 擁有者</option>
+                            <option value="editor" selected>系統管理員帳戶 - 可編輯者</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btnAddAccount" class="delete-btn" style="background:#b71c1c;">＋ 新增帳號</button>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">帳號管理</div>
+                    <div id="accountList" class="account-list"></div>
+                </div>
+            </div>
+         </aside>
+
+        <!-- 右側管理面板 -->
+        <aside class="admin-user-sidebar" id="adminUserSidebar">
+            <button class="sidebar-toggle-btn" id="sidebarToggle" title="收合側欄">◀</button>
+            <div class="sidebar-inner" id="sidebarInner">
+                <div class="admin-user-card">
+                    <div class="admin-user-card-avatar">👤</div>
+                    <div class="admin-user-card-name" id="currentUsername2">tyk114</div>
+                    <div class="admin-user-card-role" id="currentUserRole2">最大系統管理員帳戶-擁有者</div>
+                </div>
+
+                <div class="admin-menu-list">
+                    <button type="button" class="admin-menu-btn active" data-mode="point">📍 點位管理</button>
+                    <button type="button" class="admin-menu-btn" data-mode="hotspot">🎯 熱點管理</button>
+                    <button type="button" class="admin-menu-btn" data-mode="image">🖼 圖片管理</button>
+                    <button type="button" class="admin-menu-btn" data-mode="settings">⚙ 設定</button>
+                </div>
+
+                <div class="admin-user-card-logout">
+                    <button onclick="logoutAdmin()" class="logout-btn">登出</button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- ===== 圖片設定 Modal ===== -->
+    <div id="uploadSettingsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10050; align-items:center; justify-content:center;">
+        <div style="background:#fff; width:94%; max-width:920px; max-height:92%; overflow:auto; border-radius:12px; padding:20px; box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+            <h2 style="margin:0 0 12px 0; font-size:20px;">上傳後設定：圖片屬性</h2>
+            <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+                <div style="flex:1 1 420px; min-width:280px;">
+                    <label style="font-weight:700;">檔名</label>
+                    <input id="modalImageFilename" type="text" style="width:100%; padding:10px; margin:6px 0 12px 0; border-radius:6px; border:1px solid #e2e8f0;" readonly />
+                    <input id="modalImageType" type="hidden" />
+                    <label style="font-weight:700;">標題 (Title)</label>
+                    <input id="modalImageTitle" type="text" style="width:100%; padding:10px; margin:6px 0 12px 0; border-radius:6px; border:1px solid #e2e8f0;" />
+                    <label style="font-weight:700;">說明 (Desc)</label>
+                    <textarea id="modalImageDesc" style="width:100%; padding:10px; min-height:120px; margin:6px 0 12px 0; border-radius:6px; border:1px solid #e2e8f0;"></textarea>
+                </div>
+                <div style="flex:0 0 320px; min-width:260px;">
+                    <div class="image-type-toggle-row">
+                        <button id="modalBtnSet360" type="button" class="image-type-toggle-btn active">設為 360</button>
+                        <button id="modalBtnSetNormal" type="button" class="image-type-toggle-btn">設為一般</button>
+                    </div>
+                    <label style="font-weight:700;">標籤 (Tags，逗號分隔)</label>
+                    <input id="modalImageTags" type="text" style="width:100%; padding:10px; margin:6px 0 12px 0; border-radius:6px; border:1px solid #e2e8f0;" />
+                    <label style="font-weight:700;">所在樓層 (Floor)</label>
+                    <input id="modalImageFloor" type="text" style="width:100%; padding:10px; margin:6px 0 12px 0; border-radius:6px; border:1px solid #e2e8f0;" placeholder="例如：1F、2F、3F" />
+                    <div style="margin-top:8px;">
+                        <label style="font-weight:700; display:block; margin-bottom:6px;">拍攝位置</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input id="modalPhotoX" type="text" placeholder="X" readonly style="width:48%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;" />
+                            <input id="modalPhotoY" type="text" placeholder="Y" readonly style="width:48%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;" />
+                        </div>
+                        <button id="modalMarkOnMapBtn" type="button" style="margin-top:8px; width:100%; padding:10px; background:#0ea5a4; color:#fff; border-radius:8px; border:none;">📌 在地圖上標記位置</button>
+                        <div id="modalMarkHint" style="margin-top:8px; font-size:13px; color:#475569;"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:14px;">
+                <button id="modalCancelBtn" style="padding:10px 16px; background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer;">取消</button>
+                <button id="modalSaveBtn" style="padding:10px 16px; background:#b71c1c; color:#fff; border-radius:8px; border:none; cursor:pointer;">儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 圖片預覽 Modal ===== -->
+    <div id="imgPreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10060; align-items:center; justify-content:center; cursor:zoom-out;" onclick="if(event.target===this) closeImgPreview();">
+        <button onclick="closeImgPreview()" style="position:absolute; top:20px; right:24px; background:rgba(255,255,255,0.2); border:none; color:#fff; font-size:28px; cursor:pointer; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">×</button>
+        <img id="imgPreviewContent" src="" style="max-width:92vw; max-height:88vh; border-radius:8px; box-shadow:0 8px 40px rgba(0,0,0,0.4);">
+        <div id="imgPreviewInfo" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); color:#fff; padding:8px 20px; border-radius:20px; font-size:13px; max-width:90vw; text-align:center;"></div>
+    </div>
+
+    <div id="panorama-overlay" class="panorama-overlay" style="display: none;">
+        <button class="panorama-close-btn" onclick="closePanoramaMode()" aria-label="關閉全景模式">×</button>
+        <div id="panorama-viewer"></div>
+    </div>
+
+    <div class="zoom-control-panel">
+        <span class="zoom-btn" id="zoomOutBtn">−</span>
+        <input type="range" id="zoomSlider" min="0.3" max="4.0" step="0.01" value="1.3">
+        <span class="zoom-btn" id="zoomInBtn">+</span>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function logoutAdmin() {
+            localStorage.removeItem('staff_token');
+            localStorage.removeItem('staff_username');
+            localStorage.removeItem('staff_role');
+            window.location.href = 'login.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const username = localStorage.getItem('staff_username') || 'tyk114';
+            const role = localStorage.getItem('staff_role') || 'owner';
+            
+            const nameEls = document.querySelectorAll('#currentUsername, #currentUsername2');
+            const roleEls = document.querySelectorAll('#currentUserRole, #currentUserRole2');
+            
+            nameEls.forEach(el => { if (el) el.textContent = username; });
+            roleEls.forEach(el => {
+                if (el) {
+                    el.textContent = role === 'owner' 
+                        ? '最大系統管理員帳戶-擁有者' 
+                        : '系統管理員帳戶-可編輯者';
+                }
+            });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('adminUserSidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                    toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+                });
+            }
+        });
+        
+        function adjustZoom(delta) {
+            const input = document.getElementById('markerZoomScale');
+            let val = parseFloat(input.value) || 1.5;
+            val = Math.round((val + delta) * 10) / 10;
+            val = Math.min(4.0, Math.max(0.5, val));
+            input.value = val;
+        }
+
+        function adjustMarkerSize(delta) {
+            const input = document.getElementById('markerSize');
+            let val = parseInt(input.value) || 120;
+            val = Math.min(200, Math.max(40, val + delta));
+            input.value = val;
+            updateMarkerPreview();
+        }
+
+        function adjustFontSize(delta) {
+            const input = document.getElementById('markerFontSize');
+            let val = parseInt(input.value) || 90;
+            val = Math.min(120, Math.max(20, val + delta));
+            input.value = val;
+            updateMarkerPreview();
+        }
+
+        function selectBorderColor(el) {
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('markerBorderColor').value = el.dataset.color;
+            updateMarkerPreview();
+        }
+
+        function selectBgColor(el, color) {
+            document.querySelectorAll('.bg-color-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('markerBgColor').value = color;
+            updateMarkerPreview();
+        }
+
+        function updateMarkerPreview() {
+            if (!previewMarker) return;
+            const size = document.getElementById('markerSize').value;
+            const fontSize = document.getElementById('markerFontSize').value;
+            const borderColor = document.getElementById('markerBorderColor').value;
+            const bgColor = document.getElementById('markerBgColor').value;
+            previewMarker.style.width = size + 'px';
+            previewMarker.style.height = size + 'px';
+            previewMarker.style.fontSize = fontSize + 'px';
+            previewMarker.style.borderColor = borderColor;
+            previewMarker.style.background = bgColor;
+        }
+
+        // 點位樣式選擇
+        document.addEventListener('DOMContentLoaded', function() {
+            const shapeGroup = document.getElementById('shapeSelectGroup');
+            if (shapeGroup) {
+                shapeGroup.querySelectorAll('.shape-select-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        shapeGroup.querySelectorAll('.shape-select-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        updateMarkerPreview();
+                    });
+                });
+            }
+        });
+
+        function showPointInfo() {
+            showToast('📍 點位設定說明：\n1. 選擇現有點位可編輯，或留空新增\n2. 可設定樣式(形狀/大小/顏色)\n3. 點擊「點擊地圖設定位置」後在地圖上點選座標');
+        }
+        function showHotspotInfo() {
+            showToast('🎯 熱點管理說明：\n1. 第一步：選擇 360 全景圖片\n2. 第二步：查看/新增熱點\n3. 第三步：編輯熱點詳細設定（Pitch/Yaw/類型/文字）\n4. 點擊全景畫面可直接標記熱點位置');
+        }
+        function showImageInfo() {
+            showToast('🖼 圖片管理說明：\n1. 拖曳或點擊上傳圖片\n2. 可批次設為 360 或一般類型\n3. 點擊圖片可預覽');
+        }
+        function showSettingsInfo() {
+            showToast('⚙ 設定說明：\n1. 更改管理員密碼\n2. 新增/刪除管理帳號\n3. 帳號分為擁有者與編輯者兩種權限');
+        }
+
+        // 綁定右側選單按鈕切換
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuBtns = document.querySelectorAll('.admin-menu-btn');
+            menuBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mode = this.dataset.mode;
+                    if (!mode) return;
+                    menuBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    if (typeof switchAdminSection === 'function') {
+                        switchAdminSection(mode);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

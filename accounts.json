@@ -1,0 +1,16 @@
+[
+  {
+    "id": "tyk114",
+    "username": "tyk114",
+    "password": "20260622",
+    "role": "owner",
+    "canDelete": false
+  },
+  {
+    "id": "jerry",
+    "username": "jerry",
+    "password": "20260622",
+    "role": "editor",
+    "canDelete": true
+  }
+]

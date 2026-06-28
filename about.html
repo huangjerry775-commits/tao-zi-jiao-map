@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關於我們 - 桃子腳地圖專案</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { overflow-y: auto; } 
+        .main-content-area { margin-top: 140px; margin-bottom: 60px; padding: 0 20px; display: flex; justify-content: center; }
+        .about-card { width: 100%; max-width: 850px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 45px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.6); }
+        .about-card h1 { color: #b71c1c; font-size: 32px; margin-bottom: 8px; font-weight: 800; }
+        .about-card .subtitle { font-size: 15px; color: #718093; margin-bottom: 35px; border-bottom: 2px solid rgba(183, 28, 28, 0.1); padding-bottom: 15px; }
+        .info-section { margin-bottom: 30px; }
+        .info-section h2 { font-size: 20px; color: #1e272e; margin-bottom: 12px; }
+        .info-section p { font-size: 16px; line-height: 1.8; color: #4a5568; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="loader-geometric"></div>
+            <div class="loader-text">TAO-ZI-JIAO</div>
+            <div class="loader-subtext">系統載入中...</div>
+        </div>
+    </div>
+
+    <nav class="shape-navbar">
+        <div class="logo-container">
+            <img src="./page_picture/logo.png" alt="Logo" class="site-logo">
+        </div>
+       
+        <ul class="nav-links" id="navLinksMenu">
+            <div class="nav-indicator" id="navIndicator"></div>
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="tour.html">建築密碼</a></li>
+            <li><a href="about.html" class="active">關於我們</a></li>
+            <li><a href="login.html">管理登入</a></li>
+        </ul>
+
+        <div class="right-controls">
+            <div class="lang-selector">
+                <span class="lang-icon">🌐</span>
+                <span class="lang-text">zh-TW</span>
+                <span class="lang-arrow">▼</span>
+            </div>
+            <button id="menuBurger" class="burger-btn" style="display:none;">☰</button>
+        </div>
+    </nav>
+
+    <!-- 語言選單 -->
+    <div id="langMenu" class="lang-popup-menu">
+        <button class="lang-menu-item active" data-lang="zh-TW">🇹🇼 繁體中文</button>
+        <button class="lang-menu-item" data-lang="en">🇺🇸 English</button>
+        <button class="lang-menu-item" data-lang="ja">🇯🇵 日本語</button>
+        <button class="lang-menu-item" data-lang="ko">🇰🇷 한국어</button>
+    </div>
+
+    <div id="mobileSideMenu" class="mobile-side-menu">
+        <button id="closeMenu" class="close-menu-btn">✕</button>
+        <ul class="side-menu-links">
+            <li><a href="index.html">首頁</a></li>
+            <li><a href="tour.html">建築密碼</a></li>
+            <li><a href="about.html">關於我們</a></li>
+            <li><a href="login.html" style="color: #b71c1c;">⚙️ 管理登入</a></li>
+        </ul>
+    </div>
+
+    <main class="main-content-area">
+        <div class="about-card">
+            <h1>關於我們</h1>
+            <div class="subtitle">新北市立桃子腳國民中小學 · 數位校園發展小組</div>
+            <div class="info-section">
+                <h2>🏫 學校簡介</h2>
+                <p>桃子腳自創校以來，即以開放、人文、綠意與科技兼具的校園環境聞名。我們打破傳統圍牆的隔閡，將自然生態引入教學環境。</p>
+            </div>
+            <div class="info-section">
+                <h2>🌐 智慧校園導覽願景</h2>
+                <p>為了提供家長、新生與訪客更直覺的空間體驗，本團隊開發了此套高效能的互動式地圖系統。整合了 PC 端的滑順阻尼拖曳控制、行動端雙指捏合縮放，以及 360° 高畫質實景環景視窗，讓每個人都能隨時隨地探訪桃子腳的美麗角落。</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+
+    <footer style="margin-top: 100px; text-align: center; padding: 30px 10px; font-size: 13px; color: #95a5a6; border-top: 1px dashed #e2e2e2;">
+        <p>© 2026 新北市立桃子腳國民中小學 版權所有</p>
+        
+        <a href="login.html" class="staff-hidden-entrance" style="color: #bdc3c7; text-decoration: none; font-size: 11px; margin-top: 15px; display: inline-block; transition: color 0.3s; cursor: default;">
+            ⚙️ 系統核心管理端
+        </a>
+    </footer>
+
+    <style>
+        .staff-hidden-entrance:hover {
+            color: #bdc3c7 !important;
+            cursor: pointer !important;
+        }
+    </style>
+</body>
+</html>

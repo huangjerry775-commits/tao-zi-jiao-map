@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+
+# Uploaded images (user data)
+uploads/
+
+# Database files
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+
+# Firebase cache
+.firebase/
+
+# Agent skills
+.agents/
+
+# Temporary files
+TEMP_DO_NOT_OPEN.txt
+_append_sync_temp.js
+compress_existing_images.js
+new_inject.txt
+skills-lock.json
+.sixth/
